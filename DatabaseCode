@@ -1,0 +1,266 @@
+CREATE TABLE Admin (
+    ID INT IDENTITY(1,1)  PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Contact VARCHAR(100),
+    Address VARCHAR(255),
+    Username VARCHAR(50) UNIQUE NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Password VARCHAR(255) NOT NULL
+);
+CREATE TABLE Agent (
+    ID INT  IDENTITY(1,1) PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Contact VARCHAR(50),
+    Address VARCHAR(50),
+    Username VARCHAR(50) UNIQUE NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Password VARCHAR(50) NOT NULL,
+    Admin_ID INT,
+    FOREIGN KEY (Admin_ID) REFERENCES Admin(ID)
+);
+CREATE TABLE Property (
+    ID INT  IDENTITY(1,1) PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Description TEXT,
+    Price int,
+    Status VARCHAR(50),
+    Property_Type_ID INT,
+    Agent_ID INT,
+    FOREIGN KEY (Agent_ID) REFERENCES Agent(ID),
+	Client_ID INT,
+	FOREIGN KEY (Client_ID) REFERENCES Client(ID),
+);
+CREATE TABLE Client (
+    ID INT  IDENTITY(1,1) PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Contact VARCHAR(50),
+    Address VARCHAR(50),
+    Username VARCHAR(50) UNIQUE NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Password VARCHAR(50) NOT NULL,
+	Agent_ID INT,
+	FOREIGN KEY(Agent_ID) REFERENCES Agent(ID),
+);
+
+INSERT INTO Admin VALUES 
+('Alice Johnson', '123-456-7890', '123 Elm Street', 'alice.j', 'alice@example.com', 'password123'),
+('Bob Smith', '234-567-8901', '456 Oak Avenue', 'bob.s', 'bob@example.com', 'password456'),
+('Carol White', '345-678-9012', '789 Pine Road', 'carol.w', 'carol@example.com', 'password789'),
+('David Brown', '456-789-0123', '101 Maple Blvd', 'david.b', 'david@example.com', 'password101');
+
+INSERT INTO Agent VALUES 
+('Eve Harris', '567-890-1234', '234 Cedar Lane', 'eve.h', 'eve@example.com', 'password234', 1),
+('Frank Thomas', '678-901-2345', '345 Birch Street', 'frank.t', 'frank@example.com', 'password345', 2),
+('Grace Lee', '789-012-3456', '456 Walnut Drive', 'grace.l', 'grace@example.com', 'password456', 3),
+('Henry Wilson', '890-123-4567', '567 Spruce Court', 'henry.w', 'henry@example.com', 'password567', 4);
+
+INSERT INTO Property VALUES 
+('Luxury Villa', 'A beautiful luxury villa with a sea view.', 1000000.00, 'Available', 1, 1, 1),
+('Cozy Cottage', 'A cozy cottage in the countryside.', 150000.00, 'Available', 2, 2, 2),
+('Modern Apartment', 'A modern apartment in the city center.', 300000.00, 'Sold', 3, 3, 3),
+('Beach House', 'A beach house with private access to the beach.', 750000.00, 'Pending', 4, 4, 4);
+
+INSERT INTO Client VALUES 
+('Ivy Turner', '901-234-5678', '678 Fir Avenue', 'ivy.t', 'ivy@example.com', 'password678', 1),
+('Jack Green', '012-345-6789', '789 Aspen Way', 'jack.g', 'jack@example.com', 'password789', 2),
+('Karen Walker', '123-456-7890', '890 Palm Drive', 'karen.w', 'karen@example.com', 'password890', 3),
+('Leo King', '234-567-8901', '901 Pine Lane', 'leo.k', 'leo@example.com', 'password901', 4);
+
+CREATE PROCEDURE AddAdmin
+    @p_Name VARCHAR(50),
+    @p_Contact VARCHAR(50),
+    @p_Address VARCHAR(50),
+   @p_Username VARCHAR(50),
+    @p_Email VARCHAR(100),
+    @p_Password VARCHAR(50)
+	AS
+BEGIN
+    INSERT INTO Admin (Name, Contact, Address, Username, Email, Password)
+    VALUES (@p_Name, @p_Contact, @p_Address, @p_Username, @p_Email, @p_Password);
+END 
+
+CREATE PROCEDURE AddAgent
+    @p_Name VARCHAR(50),
+    @p_Contact VARCHAR(50),
+    @p_Address VARCHAR(50),
+    @p_Username VARCHAR(50),
+    @p_Email VARCHAR(100),
+    @p_Password VARCHAR(50),
+    @p_Admin_ID INT
+	AS
+BEGIN
+    INSERT INTO Agent (Name, Contact, Address, Username, Email, Password, Admin_ID)
+    VALUES (@p_Name, @p_Contact, @p_Address, @p_Username, @p_Email, @p_Password, @p_Admin_ID);
+END 
+
+CREATE PROCEDURE AddProperty
+    @p_Name VARCHAR(50),
+    @p_Description TEXT,
+    @p_Price int,
+    @p_Status VARCHAR(50),
+    @p_Property_Type_ID INT,
+    @p_Agent_ID INT,
+	@p_Client_ID INT
+	AS
+BEGIN
+    INSERT INTO Property (Name, Description, Price, Status, Property_Type_ID, Agent_ID, CLient_ID)
+    VALUES (@p_Name, @p_Description, @p_Price, @p_Status, @p_Property_Type_ID, @p_Agent_ID, @p_Client_ID);
+END 
+
+CREATE PROCEDURE AddClient
+    @p_Name VARCHAR(50),
+    @p_Contact VARCHAR(50),
+    @p_Address VARCHAR(50),
+    @p_Username VARCHAR(50),
+    @p_Email VARCHAR(100),
+    @p_Password VARCHAR(50),
+    @p_Agent_ID INT
+	AS
+BEGIN
+    INSERT INTO Client (Name, Contact, Address, Username, Email, Password, Agent_ID)
+    VALUES (@p_Name, @p_Contact, @p_Address, @p_Username, @p_Email, @p_Password, @p_Agent_ID);
+END
+
+
+Create PROCEDURE DeleteAdmin
+    @p_ID INT
+	AS
+BEGIN
+    DELETE FROM Property WHERE Agent_ID = (select ID from Agent where Admin_ID = @p_ID);
+	DELETE FROM Client WHERE Agent_ID = (select ID from Agent where Admin_ID = @p_ID);
+	Delete from Agent where Admin_ID = @p_ID;
+	Delete from Admin where ID = @p_ID;
+END
+
+
+CREATE PROCEDURE DeleteAgent
+    @p_ID INT
+	AS
+BEGIN
+    DELETE FROM Agent WHERE ID = @p_ID;
+END
+
+CREATE PROCEDURE DeleteProperty
+    @p_ID INT
+	AS
+BEGIN
+    DELETE FROM Property WHERE ID = @p_ID;
+END
+
+
+CREATE PROCEDURE DeleteClient
+    @p_ID INT
+	AS
+BEGIN
+    DELETE FROM Client WHERE ID = @p_ID;
+END
+
+CREATE PROCEDURE UpdateAdmin
+    @p_ID INT,
+    @p_Name VARCHAR(50),
+    @p_Contact VARCHAR(50),
+    @p_Address VARCHAR(50),
+    @p_Username VARCHAR(50),
+    @p_Email VARCHAR(100),
+    @p_Password VARCHAR(50)
+	AS
+BEGIN
+    UPDATE Admin
+    SET Name = @p_Name,
+        Contact = @p_Contact,
+        Address = @p_Address,
+        Username = @p_Username,
+        Email = @p_Email,
+        Password = @p_Password
+    WHERE ID = @p_ID;
+END
+
+CREATE PROCEDURE UpdateAgent
+    @p_ID INT,
+    @p_Name VARCHAR(50),
+    @p_Contact VARCHAR(50),
+    @p_Address VARCHAR(50),
+    @p_Username VARCHAR(50),
+    @p_Email VARCHAR(100),
+    @p_Password VARCHAR(50),
+    @p_Admin_ID INT
+	AS
+BEGIN
+    UPDATE Agent
+    SET Name = @p_Name,
+        Contact = @p_Contact,
+        Address = @p_Address,
+        Username = @p_Username,
+        Email = @p_Email,
+        Password = @p_Password,
+        Admin_ID = @p_Admin_ID
+    WHERE ID = @p_ID;
+END
+
+CREATE PROCEDURE UpdateProperty
+    @p_ID INT,
+    @p_Name VARCHAR(50),
+    @p_Description TEXT,
+    @p_Price int,
+    @p_Status VARCHAR(50),
+    @p_Property_Type_ID INT,
+    @p_Agent_ID INT,
+	@p_CLient_ID INT
+	AS
+BEGIN
+    UPDATE Property
+    SET Name = @p_Name,
+        Description = @p_Description,
+        Price = @p_Price,
+        Status = @p_Status,
+        Property_Type_ID = @p_Property_Type_ID,
+        Agent_ID = @p_Agent_ID,
+		CLient_ID = @p_CLient_ID
+    WHERE ID = @p_ID;
+END
+
+CREATE PROCEDURE UpdateClient
+    @p_ID INT,
+    @p_Name VARCHAR(50),
+    @p_Contact VARCHAR(50),
+    @p_Address VARCHAR(50),
+    @p_Username VARCHAR(50),
+    @p_Email VARCHAR(100),
+    @p_Password VARCHAR(50),
+    @p_Agent_ID INT
+	AS
+BEGIN
+    UPDATE Client
+    SET Name = @p_Name,
+        Contact = @p_Contact,
+        Address = @p_Address,
+        Username = @p_Username,
+        Email = @p_Email,
+        Password = @p_Password,
+        Agent_ID = @p_Agent_ID
+    WHERE ID = @p_ID;
+END
+
+CREATE PROCEDURE DisplayAdmin
+AS
+BEGIN
+    SELECT * FROM Admin;
+END
+
+CREATE PROCEDURE DisplayAgent
+AS
+BEGIN
+    SELECT * FROM Agent;
+END
+
+CREATE PROCEDURE DisplayProperty
+AS
+BEGIN
+    SELECT * FROM Property;
+END
+
+CREATE PROCEDURE DisplayClient
+AS
+BEGIN
+    SELECT * FROM Client;
+END
